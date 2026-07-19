@@ -1,3 +1,4 @@
+import asyncio
 import json
 from typing import Any
 
@@ -28,15 +29,21 @@ async def llm_complete(system_prompt: str, user_prompt: str, response_model: dic
     if response_model:
         body["response_format"] = {"type": "json_object"}
 
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        resp = await client.post(
-            f"{settings.llm_base_url.rstrip('/')}/chat/completions",
-            headers=_get_headers(),
-            json=body,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        return data["choices"][0]["message"]["content"]
+    max_retries = 5
+    for attempt in range(max_retries):
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(
+                f"{settings.llm_base_url.rstrip('/')}/chat/completions",
+                headers=_get_headers(),
+                json=body,
+            )
+            if resp.status_code == 429 and attempt < max_retries - 1:
+                wait = 2 ** attempt * 5
+                await asyncio.sleep(wait)
+                continue
+            resp.raise_for_status()
+            data = resp.json()
+            return data["choices"][0]["message"]["content"]
 
 
 async def extract_json(system_prompt: str, user_prompt: str) -> dict[str, Any]:

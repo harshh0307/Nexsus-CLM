@@ -14,15 +14,18 @@ Rules:
 3. Include a confidence_score (0.0 to 1.0) for the overall schema coverage.
 4. Return ONLY valid JSON with no markdown or explanation."""
 
-_EXTRACTION_PROMPT_TEMPLATE = """You are a contract extraction engine.
-Extract structured data from the following contract text using this JSON schema:
+_EXTRACTION_SYSTEM_PROMPT = """You are a contract data extraction engine.
+Extract the requested fields from the contract text and return them as JSON.
+Return ONLY valid JSON with no markdown or explanation."""
+
+_EXTRACTION_PROMPT_TEMPLATE = """Extract the following fields from this contract:
 
 {schema_json}
 
 Contract text:
 {contract_text}
 
-Return ONLY valid JSON matching the schema. Do not include any markdown or explanation."""
+Return a JSON object with the extracted values for each field. If a field is not found in the contract, use null as the value."""
 
 
 async def generate_schema(contract_text: str, clause_texts: list[str] | None = None) -> dict[str, Any]:
@@ -40,5 +43,5 @@ async def extract_fields(contract_text: str, schema: dict[str, Any]) -> dict[str
         schema_json=json.dumps(schema, indent=2),
         contract_text=contract_text[:12000],
     )
-    result = await extract_json(_DYNAMIC_SCHEMA_PROMPT, user_prompt)
+    result = await extract_json(_EXTRACTION_SYSTEM_PROMPT, user_prompt)
     return result

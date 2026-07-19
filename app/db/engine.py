@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlmodel import SQLModel
 
@@ -11,6 +12,10 @@ async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+        # Add party column to contracts table if it doesn't exist
+        await conn.execute(text(
+            "ALTER TABLE contracts ADD COLUMN IF NOT EXISTS party VARCHAR DEFAULT 'company'"
+        ))
 
 
 async def get_session():

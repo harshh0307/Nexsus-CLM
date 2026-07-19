@@ -2,7 +2,7 @@ import os
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status
 from pypdf import PdfReader
 from sqlmodel import select
 
@@ -18,9 +18,13 @@ UPLOAD_DIR = "/app/uploads"
 @router.post("/upload")
 async def upload_contract(
     file: UploadFile,
+    party: str = Query(..., description="'company' or 'client'"),
     user: User = Depends(get_current_user),
     session=Depends(get_session),
 ):
+    if party not in ("company", "client"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="party must be 'company' or 'client'")
+
     if not file.filename or not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only PDF files are supported")
 
@@ -46,6 +50,7 @@ async def upload_contract(
         file_name=file.filename,
         storage_path=path,
         status="uploaded",
+        party=party,
         raw_text=raw_text,
     )
     session.add(contract)
@@ -56,6 +61,7 @@ async def upload_contract(
         "id": str(contract.id),
         "file_name": contract.file_name,
         "status": contract.status,
+        "party": contract.party,
         "created_at": contract.created_at.isoformat(),
     }
 
@@ -76,6 +82,7 @@ async def list_contracts(
             "id": str(c.id),
             "file_name": c.file_name,
             "status": c.status,
+            "party": c.party,
             "created_at": c.created_at.isoformat(),
         }
         for c in results
@@ -99,6 +106,7 @@ async def get_contract(
         "id": str(contract.id),
         "file_name": contract.file_name,
         "status": contract.status,
+        "party": contract.party,
         "extracted_metadata": contract.extracted_metadata,
         "raw_text_preview": contract.raw_text[:500] if contract.raw_text else "",
         "created_at": contract.created_at.isoformat(),

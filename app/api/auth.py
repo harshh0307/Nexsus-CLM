@@ -31,6 +31,9 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 async def register(body: RegisterRequest, session=Depends(get_session)):
+    if len(body.password) < 6:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password must be at least 6 characters")
+
     stmt = select(User).where(User.email == body.email)
     existing = (await session.execute(stmt)).scalar_one_or_none()
     if existing:
