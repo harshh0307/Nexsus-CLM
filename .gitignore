@@ -10,4 +10,7 @@ build/
 *.db
 *.sqlite3
 .DS_Store
-Thumbs.db
+Thumbs.
+uploads/
+test_contract.pdf
+*.pdf

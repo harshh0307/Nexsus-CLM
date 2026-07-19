@@ -1,5 +1,7 @@
 import uuid
 from datetime import datetime, timezone
+
+_utcnow = lambda: datetime.now(timezone.utc).replace(tzinfo=None)
 from typing import Any, Optional
 
 from pgvector.sqlalchemy import Vector
@@ -19,11 +21,11 @@ class Contract(SQLModel, table=True):
     raw_text: str = Field(default="")
     version: int = Field(default=1)
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
+        default_factory=_utcnow
     )
     updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)},
+        default_factory=_utcnow,
+        sa_column_kwargs={"onupdate": _utcnow},
     )
 
     clauses: list["ContractClause"] = Relationship(back_populates="contract")
@@ -63,5 +65,31 @@ class AuditLog(SQLModel, table=True):
     performed_by: str = Field(default="system")
     details: dict = Field(default_factory=dict, sa_type=JSON)
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
+        default_factory=_utcnow
+    )
+
+
+class User(SQLModel, table=True):
+    __tablename__ = "users"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    email: str = Field(unique=True, index=True)
+    password_hash: str
+    name: str
+    is_active: bool = Field(default=True)
+    created_at: datetime = Field(
+        default_factory=_utcnow
+    )
+
+
+class PasswordResetToken(SQLModel, table=True):
+    __tablename__ = "password_reset_tokens"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="users.id", index=True)
+    token_hash: str
+    expires_at: datetime
+    used_at: Optional[datetime] = Field(default=None)
+    created_at: datetime = Field(
+        default_factory=_utcnow
     )

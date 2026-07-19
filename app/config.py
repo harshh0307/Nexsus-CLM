@@ -7,6 +7,11 @@ class Settings(BaseSettings):
     github_token: str = ""
     llm_base_url: str = "https://models.inference.ai.azure.com"
     llm_model: str = "gpt-4o-mini"
+    jwt_secret: str = "change-me-in-production"
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 60
+    reset_token_expire_minutes: int = 15
+    dev_mode: bool = True
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
