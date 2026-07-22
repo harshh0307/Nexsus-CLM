@@ -78,6 +78,31 @@ This starts 3 services:
 | **Adminer** | http://localhost:8080 | Database admin UI |
 | **API Docs** | http://localhost:8000/docs | Swagger/OpenAPI docs |
 
+### Access from Other Devices (LAN)
+
+All services listen on all network interfaces by default. Other devices on the same WiFi/LAN can access them using your computer's local IP.
+
+**Find your local IP:**
+
+```bash
+ipconfig
+```
+
+Look for `IPv4 Address` under your active adapter (e.g., `192.168.1.5`).
+
+**From another device on the same network:**
+
+| Service | URL |
+|---|---|
+| App | `http://192.168.1.5:8000` |
+| Adminer | `http://192.168.1.5:8080` |
+| API Docs | `http://192.168.1.5:8000/docs` |
+| PostgreSQL | `192.168.1.5:5432` |
+
+Replace `192.168.1.5` with your actual local IP.
+
+> **Note:** Make sure your Windows Firewall allows incoming connections on ports 8000, 8080, and 5432. If a device can't connect, add a firewall rule: `Windows Defender Firewall` → `Advanced Settings` → `Inbound Rules` → `New Rule` → `Port` → `TCP` → enter port number → `Allow the connection`.
+
 ### 3. Use It
 
 ```bash
