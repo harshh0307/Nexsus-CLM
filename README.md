@@ -74,10 +74,10 @@ This starts 3 services:
 
 | Service | URL | Purpose |
 |---|---|---|
-| **App** | http://localhost:8000 | FastAPI server |
+| **App (API)** | http://localhost:8000 | FastAPI server |
+| **Gradio UI** | http://localhost:8000/ui | Web interface (login, upload, analyze, compare) |
 | **Adminer** | http://localhost:8080 | Database admin UI |
 | **API Docs** | http://localhost:8000/docs | Swagger/OpenAPI docs |
-| **Gradio UI** | http://localhost:8000/ui | Web interface (login, upload, analyze, compare) |
 
 ### Access from Other Devices (LAN)
 
