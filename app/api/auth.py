@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import select
 
 from app.config import settings
+from app.core.seed_guidelines import seed_default_guidelines
 from app.db.engine import get_session
 from app.db.models import PasswordResetToken, User
 from app.schemas.auth import (
@@ -47,6 +48,8 @@ async def register(body: RegisterRequest, session=Depends(get_session)):
     session.add(user)
     await session.commit()
     await session.refresh(user)
+
+    await seed_default_guidelines(str(user.id), session)
 
     token = create_access_token(str(user.id), user.email)
     return AuthResponse(access_token=token, user_id=str(user.id), email=user.email, name=user.name)

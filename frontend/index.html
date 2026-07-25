@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexusCLM — Contract Intelligence</title>
+  <link rel="stylesheet" href="/ui/css/style.css">
+</head>
+<body>
+  <div id="global-spinner" class="spinner-overlay" style="display:none">
+    <div class="spinner"></div>
+  </div>
+  <div id="toast-container"></div>
+
+  <div id="login-section">
+    <div class="login-card glass">
+      <div class="login-header">
+        <div class="login-logo">⬡</div>
+        <h1>NexusCLM</h1>
+        <p class="login-subtitle">Contract Intelligence Engine</p>
+      </div>
+      <div id="login-form">
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" placeholder="you@company.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <div class="form-group" id="name-group" style="display:none">
+          <label for="login-name">Name</label>
+          <input type="text" id="login-name" placeholder="Your name" autocomplete="name">
+        </div>
+        <p id="login-error" class="error-msg"></p>
+        <button id="login-btn" class="btn btn-primary btn-full">Sign In</button>
+        <p class="login-toggle">
+          <span id="login-toggle-text">Don't have an account?</span>
+          <a href="#" id="login-toggle-link">Register</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-section" style="display:none">
+    <nav id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">⬡</div>
+        <h2>NexusCLM</h2>
+      </div>
+      <div class="sidebar-user">
+        <div class="user-avatar" id="user-avatar">U</div>
+        <span id="user-display">User</span>
+      </div>
+      <div class="sidebar-nav">
+        <button class="sidebar-btn active" data-page="dashboard">
+          <span class="sidebar-icon">◆</span> Dashboard
+        </button>
+        <button class="sidebar-btn" data-page="contracts">
+          <span class="sidebar-icon">📄</span> Contracts
+        </button>
+        <button class="sidebar-btn" data-page="guidelines">
+          <span class="sidebar-icon">⚙</span> Guidelines
+        </button>
+        <button class="sidebar-btn" data-page="analyze">
+          <span class="sidebar-icon">🔍</span> Analyze
+        </button>
+        <button class="sidebar-btn" data-page="compare">
+          <span class="sidebar-icon">⇄</span> Compare
+        </button>
+      </div>
+      <div class="sidebar-footer">
+        <button id="logout-btn" class="sidebar-btn logout-btn">
+          <span class="sidebar-icon">↩</span> Logout
+        </button>
+      </div>
+    </nav>
+
+    <main id="content">
+      <div id="page-dashboard" class="page active">
+        <div class="page-header">
+          <h1>Dashboard</h1>
+          <p class="page-desc">Overview of your contract intelligence</p>
+        </div>
+        <div class="stat-grid" id="stat-grid">
+          <div class="stat-card glass">
+            <div class="stat-icon">📄</div>
+            <div class="stat-info">
+              <span class="stat-number" id="stat-contracts">0</span>
+              <span class="stat-label">Contracts</span>
+            </div>
+          </div>
+          <div class="stat-card glass">
+            <div class="stat-icon">⚙</div>
+            <div class="stat-info">
+              <span class="stat-number" id="stat-guidelines">0</span>
+              <span class="stat-label">Guidelines</span>
+            </div>
+          </div>
+          <div class="stat-card glass">
+            <div class="stat-icon">⚠</div>
+            <div class="stat-info">
+              <span class="stat-number" id="stat-risk">—</span>
+              <span class="stat-label">Avg Risk</span>
+            </div>
+          </div>
+          <div class="stat-card glass">
+            <div class="stat-icon">✔</div>
+            <div class="stat-info">
+              <span class="stat-number" id="stat-compliant">0</span>
+              <span class="stat-label">Compliant</span>
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <h2>Recent Analyses</h2>
+          <div class="table-container" id="recent-analyses">
+            <p class="empty-state">No analyses yet. Upload a contract to get started.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-contracts" class="page">
+        <div class="page-header">
+          <h1>Contracts</h1>
+          <p class="page-desc">Upload and manage your contracts</p>
+        </div>
+        <div class="upload-grid">
+          <div class="upload-card glass">
+            <h3>Company Contract</h3>
+            <p class="upload-desc">Upload your company's standard contract</p>
+            <div class="upload-zone" id="upload-company">
+              <input type="file" id="file-company" accept=".pdf,.doc,.docx" hidden>
+              <div class="upload-placeholder">
+                <span class="upload-icon">📤</span>
+                <p>Drop PDF here or click to browse</p>
+              </div>
+            </div>
+            <div id="upload-company-status"></div>
+          </div>
+          <div class="upload-card glass">
+            <h3>Client Contract</h3>
+            <p class="upload-desc">Upload a contract received from a client</p>
+            <div class="upload-zone" id="upload-client">
+              <input type="file" id="file-client" accept=".pdf,.doc,.docx" hidden>
+              <div class="upload-placeholder">
+                <span class="upload-icon">📤</span>
+                <p>Drop PDF here or click to browse</p>
+              </div>
+            </div>
+            <div id="upload-client-status"></div>
+          </div>
+        </div>
+        <div class="section">
+          <h2>All Contracts</h2>
+          <div class="table-container" id="contracts-table">
+            <p class="empty-state">No contracts uploaded yet.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-guidelines" class="page">
+        <div class="page-header">
+          <h1>Guidelines</h1>
+          <p class="page-desc">Define company and client guidelines for contract analysis</p>
+        </div>
+        <div class="guideline-inputs">
+          <div class="guideline-card glass">
+            <h3>Company Guidelines</h3>
+            <p class="upload-desc">Define rules your company follows (JSON format)</p>
+            <textarea id="guideline-company" class="guideline-textarea" placeholder='[{"rule": "Limit liability to fees paid", "category": "liability"}]'></textarea>
+            <button id="upload-guideline-company" class="btn btn-primary">Upload Company Guidelines</button>
+          </div>
+          <div class="guideline-card glass">
+            <h3>Client Guidelines</h3>
+            <p class="upload-desc">Define rules the client typically requests (JSON format)</p>
+            <textarea id="guideline-client" class="guideline-textarea" placeholder='[{"rule": "Require mutual indemnification", "category": "indemnification"}]'></textarea>
+            <button id="upload-guideline-client" class="btn btn-primary">Upload Client Guidelines</button>
+          </div>
+        </div>
+        <div class="section">
+          <h2>Existing Guidelines</h2>
+          <div class="table-container" id="guidelines-table">
+            <p class="empty-state">No guidelines defined yet.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-analyze" class="page">
+        <div class="page-header">
+          <h1>Analyze</h1>
+          <p class="page-desc">Analyze a contract against both sets of guidelines</p>
+        </div>
+        <div class="analyze-controls glass">
+          <div class="form-group">
+            <label for="analyze-contract">Select Contract</label>
+            <select id="analyze-contract">
+              <option value="">— Select a contract —</option>
+            </select>
+          </div>
+          <button id="analyze-btn" class="btn btn-primary" disabled>Analyze Contract</button>
+        </div>
+        <div id="analyze-results"></div>
+      </div>
+
+      <div id="page-compare" class="page">
+        <div class="page-header">
+          <h1>Compare</h1>
+          <p class="page-desc">Compare company and client contracts to find gaps</p>
+        </div>
+        <div class="compare-controls glass">
+          <div class="form-group">
+            <label for="compare-company">Company Contract</label>
+            <select id="compare-company">
+              <option value="">— Select company contract —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="compare-client">Client Contract</label>
+            <select id="compare-client">
+              <option value="">— Select client contract —</option>
+            </select>
+          </div>
+          <button id="compare-btn" class="btn btn-primary" disabled>Compare Contracts</button>
+        </div>
+        <div id="compare-results"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/ui/js/api.js"></script>
+  <script src="/ui/js/auth.js"></script>
+  <script src="/ui/js/screens.js"></script>
+</body>
+</html>

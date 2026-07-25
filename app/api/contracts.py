@@ -4,6 +4,25 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status
 from pypdf import PdfReader
+
+ALLOWED_EXTENSIONS = (".pdf", ".doc", ".docx")
+
+
+def extract_text_from_file(path: str) -> str:
+    if path.lower().endswith(".pdf"):
+        try:
+            reader = PdfReader(path)
+            return "".join(page.extract_text() or "" for page in reader.pages)
+        except Exception:
+            return ""
+    elif path.lower().endswith(".docx"):
+        try:
+            from docx import Document
+            doc = Document(path)
+            return "\n".join(p.text for p in doc.paragraphs)
+        except Exception:
+            return ""
+    return ""
 from sqlmodel import select
 
 from app.db.engine import get_session
@@ -25,8 +44,8 @@ async def upload_contract(
     if party not in ("company", "client"):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="party must be 'company' or 'client'")
 
-    if not file.filename or not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only PDF files are supported")
+    if not file.filename or not any(file.filename.lower().endswith(ext) for ext in ALLOWED_EXTENSIONS):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only PDF and DOC files are supported")
 
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     file_id = str(uuid.uuid4())
@@ -37,13 +56,7 @@ async def upload_contract(
     with open(path, "wb") as f:
         f.write(content)
 
-    raw_text = ""
-    try:
-        reader = PdfReader(path)
-        for page in reader.pages:
-            raw_text += page.extract_text() or ""
-    except Exception:
-        pass
+    raw_text = extract_text_from_file(path)
 
     contract = Contract(
         tenant_id=str(user.id),
