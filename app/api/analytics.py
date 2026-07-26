@@ -28,7 +28,12 @@ async def get_dashboard(
         text("SELECT analysis_id, contract_id, file_name, party, overall_risk_score, risk_summary, analysis_date, contract_upload_date FROM v_risk_overview WHERE tenant_id = :tid ORDER BY analysis_date DESC"),
         {"tid": tenant_id}
     )
-    risk_overview = [RiskOverviewItem(**r._mapping) for r in rows]
+    risk_overview = []
+    for r in rows:
+        d = dict(r._mapping)
+        d["analysis_id"] = str(d["analysis_id"])
+        d["contract_id"] = str(d["contract_id"])
+        risk_overview.append(RiskOverviewItem(**d))
 
     rows = await session.execute(
         text("SELECT clause_type, compliance_status, match_count FROM v_clause_compliance WHERE tenant_id = :tid ORDER BY match_count DESC"),
@@ -40,7 +45,11 @@ async def get_dashboard(
         text("SELECT guideline_id, guideline_type, standard_text, risk_level, guideline_scope, match_count, distinct_statuses, violation_count, avg_similarity FROM v_guideline_coverage WHERE tenant_id = :tid ORDER BY match_count DESC"),
         {"tid": tenant_id}
     )
-    guideline_coverage = [GuidelineCoverageItem(**r._mapping) for r in rows]
+    guideline_coverage = []
+    for r in rows:
+        d = dict(r._mapping)
+        d["guideline_id"] = str(d["guideline_id"])
+        guideline_coverage.append(GuidelineCoverageItem(**d))
 
     rows = await session.execute(
         text("SELECT clause_type, frequency FROM v_missing_clause_frequency WHERE tenant_id = :tid ORDER BY frequency DESC"),
@@ -79,7 +88,13 @@ async def get_risk_trend(
         text("SELECT analysis_id, contract_id, file_name, party, overall_risk_score, risk_summary, analysis_date, contract_upload_date FROM v_risk_overview WHERE tenant_id = :tid ORDER BY analysis_date ASC"),
         {"tid": str(user.id)}
     )
-    return [RiskOverviewItem(**r._mapping) for r in rows]
+    result = []
+    for r in rows:
+        d = dict(r._mapping)
+        d["analysis_id"] = str(d["analysis_id"])
+        d["contract_id"] = str(d["contract_id"])
+        result.append(RiskOverviewItem(**d))
+    return result
 
 
 @router.get("/compliance", response_model=list[ClauseComplianceItem])
