@@ -186,26 +186,62 @@ Guidelines are stored with 1536-dim embeddings for vector similarity matching (g
 
 ## Power BI Integration
 
-Port 5432 is exposed for direct PostgreSQL connection from Power BI.
+Connect Power BI Desktop directly to the PostgreSQL database via ODBC.
+
+### 1. Install ODBC Driver (if not already installed)
+
+Download and install [psqlODBC](https://www.postgresql.org/ftp/odbc/versions/msi/).
+
+### 2. Connect in Power BI Desktop
+
+**Get Data** → **Other** → **ODBC** → **Connect**
+
+If a PostgreSQL driver appears in the dropdown, select it and enter:
 
 | Setting | Value |
 |---|---|
 | Server | `localhost:5432` |
 | Database | `nexus_clm` |
-| Driver | PostgreSQL ODBC (psqlODBC) |
+| Username | `nexus` |
+| Password | `nexus_secret` |
 
-6 SQL views are auto-created:
+If no driver is listed, use the **Advanced options** connection string:
+
+```
+Driver={PostgreSQL Unicode};Server=localhost;Port=5432;Database=nexus_clm;Uid=nexus;Pwd=nexus_secret;
+```
+
+### 3. Select Views
+
+In the Navigator, check the `v_*` views and click **Load**:
 
 | View | Data |
 |---|---|
-| `v_risk_overview` | Risk scores per analysis |
+| `v_risk_overview` | Risk scores per analysis with timestamps |
 | `v_clause_compliance` | Compliance status by clause type |
-| `v_guideline_coverage` | Guideline match rates |
-| `v_missing_clause_frequency` | Most common missing clauses |
+| `v_guideline_coverage` | Guideline match rates and violations |
+| `v_missing_clause_frequency` | Most common missing clause types |
 | `v_contract_summary` | Contract volume and risk by party |
 | `v_audit_timeline` | Daily activity counts |
 
-Full connection guide: `docs/power-bi-guide.md`
+### 4. Build Dashboards
+
+Use these DAX measures to get started:
+
+```dax
+Avg Risk Score = AVERAGE(v_risk_overview[overall_risk_score])
+
+High Risk Contracts = COUNTROWS(FILTER(v_risk_overview, v_risk_overview[overall_risk_score] > 0.7))
+
+Compliance Rate = DIVIDE(
+    CALCULATE(COUNTROWS(v_clause_compliance), v_clause_compliance[compliance_status] = "compliant"),
+    COUNTROWS(v_clause_compliance)
+)
+```
+
+Suggested pages: Risk Overview (cards + trend line), Compliance Analysis (stacked bar), Missing Clauses (bar chart), Contract Summary (pie chart by party), Activity Timeline (line chart).
+
+Full guide with all DAX measures: `docs/power-bi-guide.md`
 
 ## Project Structure
 
