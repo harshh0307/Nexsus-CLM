@@ -34,15 +34,3 @@ async def test_user(client: httpx.AsyncClient):
 @pytest_asyncio.fixture
 async def headers(test_user):
     return {"Authorization": f"Bearer {test_user['token']}"}
-
-
-@pytest_asyncio.fixture
-async def uploaded_contract(client: httpx.AsyncClient, headers: dict, party: str = "company"):
-    with open(PDF_PATH, "rb") as f:
-        r = await client.post(
-            f"/api/contracts/upload?party={party}",
-            headers=headers,
-            files={"file": ("test.pdf", f, "application/pdf")},
-        )
-    assert r.status_code == 200, f"Upload failed: {r.status_code} {r.text}"
-    return r.json()["id"]

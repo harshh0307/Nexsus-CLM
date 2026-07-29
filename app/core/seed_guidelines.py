@@ -91,7 +91,39 @@ async def seed_default_guidelines(user_id: str, session) -> None:
             session.add(record)
             created.append(record)
 
-        for guideline in DEFAULT_COMPANY_GUIDELINES[:6]:
+        DEFAULT_USER_GUIDELINES = [
+            {
+                "type": "indemnification",
+                "text": "Client requires indemnification cap at 25% of total contract value, with mutual defense costs covered only for IP claims. No indemnification for indirect losses.",
+                "risk_level": "high",
+            },
+            {
+                "type": "liability",
+                "text": "Client requires liability cap not to exceed total contract value, with exclusions for fraud, gross negligence, and breach of confidentiality. No punitive damages.",
+                "risk_level": "high",
+            },
+            {
+                "type": "confidentiality",
+                "text": "Client requires confidentiality obligations to survive termination for 3 years, with standard exceptions for legal disclosures and independently developed information.",
+                "risk_level": "medium",
+            },
+            {
+                "type": "termination",
+                "text": "Client requires termination for convenience with 60 days notice, right to terminate for material breach with 15 days cure period, and refund of prepaid fees for unperformed services.",
+                "risk_level": "medium",
+            },
+            {
+                "type": "governing_law",
+                "text": "Client requires governing law of the State of New York with exclusive jurisdiction in New York County courts. Waiver of jury trial preferred.",
+                "risk_level": "medium",
+            },
+            {
+                "type": "data_protection",
+                "text": "Client requires data processing agreement with UK International Data Transfer Agreement (IDTA) or equivalent. 48-hour breach notification. Data portability on request.",
+                "risk_level": "high",
+            },
+        ]
+        for guideline in DEFAULT_USER_GUIDELINES:
             record = UserGuideline(
                 tenant_id=user_id,
                 guideline_type=guideline["type"],

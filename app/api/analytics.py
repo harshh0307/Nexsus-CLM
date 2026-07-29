@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends
 from sqlalchemy import text
 
@@ -17,6 +19,25 @@ from app.security.auth import get_current_user
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
 
+def _uuid_row(
+    row,
+    string_fields: list[str],
+) -> dict[str, Any]:
+    """Convert UUID columns in a SQLAlchemy row to strings for Pydantic."""
+    d = dict(row._mapping)
+    for field in string_fields:
+        d[field] = str(d[field])
+    return d
+
+
+def _risk_rows(rows) -> list[RiskOverviewItem]:
+    result = []
+    for r in rows:
+        d = _uuid_row(r, ["analysis_id", "contract_id"])
+        result.append(RiskOverviewItem(**d))
+    return result
+
+
 @router.get("/dashboard", response_model=DashboardResponse)
 async def get_dashboard(
     user: User = Depends(get_current_user),
@@ -28,12 +49,7 @@ async def get_dashboard(
         text("SELECT analysis_id, contract_id, file_name, party, overall_risk_score, risk_summary, analysis_date, contract_upload_date FROM v_risk_overview WHERE tenant_id = :tid ORDER BY analysis_date DESC"),
         {"tid": tenant_id}
     )
-    risk_overview = []
-    for r in rows:
-        d = dict(r._mapping)
-        d["analysis_id"] = str(d["analysis_id"])
-        d["contract_id"] = str(d["contract_id"])
-        risk_overview.append(RiskOverviewItem(**d))
+    risk_overview = _risk_rows(rows)
 
     rows = await session.execute(
         text("SELECT clause_type, compliance_status, match_count FROM v_clause_compliance WHERE tenant_id = :tid ORDER BY match_count DESC"),
@@ -45,11 +61,7 @@ async def get_dashboard(
         text("SELECT guideline_id, guideline_type, standard_text, risk_level, guideline_scope, match_count, distinct_statuses, violation_count, avg_similarity FROM v_guideline_coverage WHERE tenant_id = :tid ORDER BY match_count DESC"),
         {"tid": tenant_id}
     )
-    guideline_coverage = []
-    for r in rows:
-        d = dict(r._mapping)
-        d["guideline_id"] = str(d["guideline_id"])
-        guideline_coverage.append(GuidelineCoverageItem(**d))
+    guideline_coverage = [GuidelineCoverageItem(**_uuid_row(r, ["guideline_id"])) for r in rows]
 
     rows = await session.execute(
         text("SELECT clause_type, frequency FROM v_missing_clause_frequency WHERE tenant_id = :tid ORDER BY frequency DESC"),
@@ -88,13 +100,7 @@ async def get_risk_trend(
         text("SELECT analysis_id, contract_id, file_name, party, overall_risk_score, risk_summary, analysis_date, contract_upload_date FROM v_risk_overview WHERE tenant_id = :tid ORDER BY analysis_date ASC"),
         {"tid": str(user.id)}
     )
-    result = []
-    for r in rows:
-        d = dict(r._mapping)
-        d["analysis_id"] = str(d["analysis_id"])
-        d["contract_id"] = str(d["contract_id"])
-        result.append(RiskOverviewItem(**d))
-    return result
+    return _risk_rows(rows)
 
 
 @router.get("/compliance", response_model=list[ClauseComplianceItem])
