@@ -1,5 +1,12 @@
 # NexusCLM
 
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.14-blue?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/FastAPI-0.140-009688?logo=fastapi" alt="FastAPI">
+  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+</p>
+
 Autonomous post-signature contract intelligence engine. Upload contracts (PDF/DOCX), extract clauses with AI, compare against company and client guidelines, detect compliance gaps, and get risk scores — all powered by LLMs and vector search.
 
 ## Features
