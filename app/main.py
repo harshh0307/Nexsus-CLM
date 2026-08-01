@@ -11,6 +11,7 @@ from app.api.contracts import router as contracts_router
 from app.api.guidelines import router as guidelines_router
 from app.db.engine import async_session, init_db
 from app.db.seed import seed_guidelines
+from sqlalchemy import text
 
 
 @asynccontextmanager
@@ -35,4 +36,14 @@ app.mount("/ui", StaticFiles(directory=frontend_dir, html=True), name="ui")
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "nexus-clm"}
+    try:
+        async with async_session() as session:
+            await session.execute(text("SELECT 1"))
+        db_status = "ok"
+    except Exception:
+        db_status = "unreachable"
+    return {
+        "status": "ok" if db_status == "ok" else "degraded",
+        "service": "nexus-clm",
+        "database": db_status,
+    }
